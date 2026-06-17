@@ -60,6 +60,18 @@ def is_helipad(row: dict[str, str]) -> bool:
     return length_ft < 2500
 
 
+# Airports to always include regardless of type (e.g. medium/military/small
+# airports that are locally significant but not classified as large_airport).
+EXTRA_IDENTS: set[str] = {
+    "EGWU",  # RAF Northolt
+    "EGTR",  # Elstree Aerodrome
+    "EGTB",  # Wycombe Air Park
+    "EGKB",  # Biggin Hill
+    "EGLC",  # London City
+    "EGMC",  # Southend
+}
+
+
 def build_dataset() -> tuple[
     list[tuple[str, int, int]],
     list[tuple[int, int, int, int, int, int]],
@@ -69,7 +81,8 @@ def build_dataset() -> tuple[
 
     large_idents: dict[str, tuple[int, int]] = {}
     for a in airports:
-        if a.get("type") != "large_airport":
+        ident = (a.get("ident") or "").strip()
+        if a.get("type") != "large_airport" and ident not in EXTRA_IDENTS:
             continue
         ident = (a.get("ident") or "").strip()
         if len(ident) != 4:
