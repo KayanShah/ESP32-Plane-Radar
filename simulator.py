@@ -184,7 +184,7 @@ _TYPE_CAT = {
     'F900':'private_jet', 'F2TH':'private_jet', 'FA7X':'private_jet', 'FA8X':'private_jet',
     'PC24':'private_jet', 'E55P':'private_jet', 'E50P':'private_jet', 'E35L':'private_jet',
     'BE40':'private_jet', 'BE4W':'private_jet', 'HA4T':'private_jet',
-    'C25C':'private_jet', 'C550':'private_jet', 'PRM1':'private_jet',
+    'C25C':'private_jet', 'C550':'private_jet', 'PRM1':'private_jet', 'SF50':'private_jet',
     # ── Turboprop ──────────────────────────────────────────────────────
     'AT43':'turboprop', 'AT45':'turboprop', 'AT72':'turboprop',
     'AT75':'turboprop', 'AT76':'turboprop',
@@ -198,7 +198,7 @@ _TYPE_CAT = {
     'P32R':'ga',
     'M20P':'ga', 'C72R':'ga', 'C340':'ga', 'C414':'ga',
     'BE58':'ga', 'DHC2':'ga',
-    'SR20':'ga', 'SR22':'ga',
+    'SR20':'ga', 'SR22':'ga', 'S22T':'ga', 'ECHO':'ga',
     'DA40':'ga', 'DA42':'ga',
     'P28A':'ga', 'P28B':'ga',
     'BE9L':'ga', 'BE36':'ga', 'GA7C':'ga',
