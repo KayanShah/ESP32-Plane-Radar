@@ -185,6 +185,7 @@ _TYPE_CAT = {
     'PC24':'private_jet', 'E55P':'private_jet', 'E50P':'private_jet', 'E35L':'private_jet',
     'BE40':'private_jet', 'BE4W':'private_jet', 'HA4T':'private_jet',
     'C25C':'private_jet', 'C550':'private_jet', 'PRM1':'private_jet', 'SF50':'private_jet',
+    'E545':'private_jet',
     # ── Turboprop ──────────────────────────────────────────────────────
     'AT43':'turboprop', 'AT45':'turboprop', 'AT72':'turboprop',
     'AT75':'turboprop', 'AT76':'turboprop',
