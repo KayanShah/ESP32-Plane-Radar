@@ -196,7 +196,7 @@ _TYPE_CAT = {
     'SR20':'ga', 'SR22':'ga',
     'DA40':'ga', 'DA42':'ga',
     'P28A':'ga', 'P28B':'ga',
-    'BE9L':'ga', 'BE36':'ga',
+    'BE9L':'ga', 'BE36':'ga', 'GA7C':'ga',
     'TBM8':'ga', 'TBM9':'ga', 'PC12':'ga',
     # ── Helicopter ─────────────────────────────────────────────────────
     'EC35':'helicopter', 'EC45':'helicopter', 'H135':'helicopter', 'H145':'helicopter',
