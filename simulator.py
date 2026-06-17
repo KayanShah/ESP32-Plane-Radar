@@ -61,10 +61,162 @@ C_TAG_ALT  = "#5ac8ff"
 PRESETS_KM = [5.0, 10.0, 15.0, 25.0]
 OUTER_KM   = [r * 4.0 / 3.0 for r in PRESETS_KM]
 
-ADSB_API = "https://opendata.adsb.fi/api/v3/lat/{lat:.6f}/lon/{lon:.6f}/dist/{nm:.1f}"
+ADSB_API = "https://api.airplanes.live/v2/point/{lat:.6f}/{lon:.6f}/{nm_int}"
 
-C_RUNWAY       = "#389632"  # teal-ish (56, 150, 170) → using a green that pops on dark bg
-C_RUNWAY_LABEL = "#6ed2e6"  # lighter teal (110, 210, 230)
+C_RUNWAY       = "#389632"
+C_RUNWAY_LABEL = "#6ed2e6"
+
+# ---------------------------------------------------------------------------
+# Aircraft silhouettes — PNG sprites, nose-up, transparent background.
+# Loaded from simulator_assets/; PIL (Pillow) required.
+# ---------------------------------------------------------------------------
+try:
+    from PIL import Image, ImageTk
+    _PIL_OK = True
+except ImportError:
+    _PIL_OK = False
+
+_ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "simulator_assets")
+
+
+def _load_tinted_images():
+    if not _PIL_OK:
+        return {}
+    r, g, b = int(C_AIRCRAFT[1:3], 16), int(C_AIRCRAFT[3:5], 16), int(C_AIRCRAFT[5:7], 16)
+    result = {}
+    for key, fname in (
+        ('airliner_2', '2_Engine_Airliner.png'),
+        ('airliner_4', '4_Engine.png'),
+        ('private_jet', 'Private_Jet.png'),
+        ('ga',          'General_Aviation.png'),
+        ('helicopter',  'Helicopter.png'),
+        ('military',    'Military.png'),
+    ):
+        path = os.path.join(_ASSETS_DIR, fname)
+        if not os.path.exists(path):
+            continue
+        img = Image.open(path).convert("RGBA")
+        _, _, _, alpha = img.split()
+        colored = Image.new("RGBA", img.size, (r, g, b, 255))
+        colored.putalpha(alpha)
+        result[key] = colored
+    return result
+
+
+_TINTED_IMAGES = _load_tinted_images()
+_RESIZED_CACHE: dict = {}  # (img_key, size) → PIL.Image
+
+
+def _get_resized(img_key: str, size: int):
+    key = (img_key, size)
+    if key not in _RESIZED_CACHE:
+        base = _TINTED_IMAGES.get(img_key)
+        _RESIZED_CACHE[key] = base.resize((size, size), Image.LANCZOS) if base else None
+    return _RESIZED_CACHE[key]
+
+
+# category → (image_key, pixel_size on screen)
+_CAT_IMAGE = {
+    'narrow':      ('airliner_2', 32),
+    'wide':        ('airliner_2', 40),
+    'quad':        ('airliner_4', 44),
+    'regional':    ('private_jet', 28),
+    'private_jet': ('private_jet', 24),
+    'turboprop':   ('ga', 26),
+    'ga':          ('ga', 20),
+    'helicopter':  ('helicopter', 22),
+    'military':    ('military', 28),
+}
+
+_UNKNOWN_TYPES_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "unknown_types.txt")
+
+def _load_known_unknowns() -> set:
+    """Read type codes already logged in previous sessions."""
+    if not os.path.exists(_UNKNOWN_TYPES_FILE):
+        return set()
+    with open(_UNKNOWN_TYPES_FILE) as f:
+        return {line.strip().split()[0] for line in f if line.strip() and not line.startswith('#')}
+
+_LOGGED_UNKNOWNS: set = _load_known_unknowns()
+
+def _log_unknown_type(ac_type: str, callsign: str) -> None:
+    """Append a newly seen unrecognised type code to unknown_types.txt."""
+    code = ac_type.strip().upper()
+    if not code or code in _LOGGED_UNKNOWNS:
+        return
+    _LOGGED_UNKNOWNS.add(code)
+    with open(_UNKNOWN_TYPES_FILE, 'a') as f:
+        label = f"  # {callsign}" if callsign else ""
+        f.write(f"{code}{label}\n")
+
+
+_TYPE_CAT = {
+    # ── Quad widebody ──────────────────────────────────────────────────
+    'A388':'quad', 'A389':'quad',
+    'B741':'quad', 'B742':'quad', 'B743':'quad', 'B744':'quad', 'B748':'quad',
+    'A342':'quad', 'A343':'quad', 'A345':'quad', 'A346':'quad',
+    # ── Wide body twin ─────────────────────────────────────────────────
+    'B762':'wide', 'B763':'wide', 'B764':'wide',
+    'B752':'wide', 'B753':'wide', 'B703':'wide',
+    'B772':'wide', 'B773':'wide', 'B77L':'wide', 'B77W':'wide',
+    'B778':'wide', 'B779':'wide',
+    'B788':'wide', 'B789':'wide', 'B78X':'wide',
+    'A332':'wide', 'A333':'wide', 'A338':'wide', 'A339':'wide',
+    'A359':'wide', 'A35K':'wide',
+    # ── Narrow body ────────────────────────────────────────────────────
+    'A318':'narrow', 'A319':'narrow', 'A320':'narrow', 'A321':'narrow',
+    'A19N':'narrow', 'A20N':'narrow', 'A21N':'narrow',
+    'B731':'narrow', 'B732':'narrow', 'B733':'narrow', 'B734':'narrow',
+    'B735':'narrow', 'B736':'narrow', 'B737':'narrow', 'B738':'narrow', 'B739':'narrow',
+    'B37M':'narrow', 'B38M':'narrow', 'B39M':'narrow',
+    # ── Regional jet ───────────────────────────────────────────────────
+    'E170':'regional', 'E175':'regional', 'E190':'regional', 'E195':'regional',
+    'E75L':'regional', 'E7W' :'regional',
+    'CRJ2':'regional', 'CRJ7':'regional', 'CRJ9':'regional', 'CRJX':'regional',
+    # ── Business / private jet ─────────────────────────────────────────
+    'C525':'private_jet', 'C510':'private_jet', 'C56X':'private_jet',
+    'C680':'private_jet', 'C68A':'private_jet', 'C700':'private_jet',
+    'LJ45':'private_jet', 'LJ60':'private_jet', 'LJ75':'private_jet',
+    'CL30':'private_jet', 'CL35':'private_jet', 'CL60':'private_jet',
+    'GL5T':'private_jet', 'GLEX':'private_jet', 'G280':'private_jet',
+    'GLF4':'private_jet', 'GLF5':'private_jet', 'GLF6':'private_jet',
+    'F900':'private_jet', 'F2TH':'private_jet', 'FA7X':'private_jet', 'FA8X':'private_jet',
+    'PC24':'private_jet', 'E55P':'private_jet', 'E50P':'private_jet', 'E35L':'private_jet',
+    'BE40':'private_jet', 'BE4W':'private_jet', 'HA4T':'private_jet',
+    # ── Turboprop ──────────────────────────────────────────────────────
+    'AT43':'turboprop', 'AT45':'turboprop', 'AT72':'turboprop',
+    'AT75':'turboprop', 'AT76':'turboprop',
+    'DH8A':'turboprop', 'DH8B':'turboprop', 'DH8C':'turboprop', 'DH8D':'turboprop',
+    'SF34':'turboprop', 'BE20':'turboprop',
+    'P180':'turboprop', 'C130':'turboprop', 'C160':'turboprop', 'A400':'turboprop',
+    # ── GA / light piston ──────────────────────────────────────────────
+    'C150':'ga', 'C152':'ga', 'C172':'ga', 'C182':'ga', 'C208':'ga',
+    'PA28':'ga', 'PA31':'ga', 'PA32':'ga', 'PA38':'ga', 'PA44':'ga', 'PA46':'ga',
+    'P32R':'ga',
+    'SR20':'ga', 'SR22':'ga',
+    'DA40':'ga', 'DA42':'ga',
+    'P28A':'ga', 'P28B':'ga',
+    'BE9L':'ga', 'BE36':'ga',
+    'TBM8':'ga', 'TBM9':'ga', 'PC12':'ga',
+    # ── Helicopter ─────────────────────────────────────────────────────
+    'EC35':'helicopter', 'EC45':'helicopter', 'H135':'helicopter', 'H145':'helicopter',
+    'EC20':'helicopter', 'EC30':'helicopter',
+    'B06' :'helicopter', 'B407':'helicopter', 'B412':'helicopter', 'B429':'helicopter',
+    'S61' :'helicopter', 'S70' :'helicopter', 'S76' :'helicopter', 'S92' :'helicopter',
+    'R22' :'helicopter', 'R44' :'helicopter', 'R66' :'helicopter',
+    'MD52':'helicopter', 'MD53':'helicopter',
+    'AW09':'helicopter', 'AW19':'helicopter', 'AW13':'helicopter', 'AW16':'helicopter',
+    'AS32':'helicopter', 'AS50':'helicopter', 'AS55':'helicopter', 'AS65':'helicopter',
+    'BK17':'helicopter', 'NH90':'helicopter',
+    # ── Military ───────────────────────────────────────────────────────
+    'F15' :'military', 'F16' :'military', 'F18' :'military',
+    'F22' :'military', 'F35' :'military', 'F117':'military',
+    'EUFI':'military', 'TYFN':'military',
+    'A10' :'military', 'SU27':'military', 'SU30':'military',
+    'MIG2':'military', 'MIG3':'military',
+    'B1'  :'military', 'B2'  :'military', 'B52' :'military',
+}
+
 
 # ---------------------------------------------------------------------------
 # Parse airport + runway data from the C++ source (no extra files needed)
@@ -154,7 +306,7 @@ def _f(val, fallback=0.0):
 
 def fetch_aircraft(center_lat, center_lon, outer_km_val):
     dist_nm = outer_km_val / 1.852
-    url = ADSB_API.format(lat=center_lat, lon=center_lon, nm=dist_nm)
+    url = ADSB_API.format(lat=center_lat, lon=center_lon, nm_int=max(1, int(dist_nm + 0.5)))
     req = urllib.request.Request(url, headers={"User-Agent": "PlaneRadarSim/1.0"})
     with urllib.request.urlopen(req, timeout=10) as resp:
         data = json.loads(resp.read())
@@ -217,6 +369,7 @@ class RadarSim:
                  font=("monospace", 10)).pack(pady=2)
 
         self.canvas.bind("<Button-1>", self._on_click)
+        self._image_refs: list = []  # keep PhotoImage refs alive
 
         self._draw()
         self._schedule_fetch()
@@ -239,6 +392,7 @@ class RadarSim:
     # --- drawing ---
 
     def _draw(self):
+        self._image_refs = []
         c = self.canvas
         c.delete("all")
 
@@ -364,32 +518,49 @@ class RadarSim:
         c = self.canvas
         outer_km = self._outer_km()
         x, y = lat_lon_to_screen(p["lat"], p["lon"], self.lat, self.lon, outer_km)
+        heading = p["nose_deg"]
+        rad = math.radians(heading)
+        sin_h, cos_h = math.sin(rad), math.cos(rad)
 
-        # Speed vector (track direction, magenta)
+        # Resolve PNG sprite for this aircraft type
+        cat = _TYPE_CAT.get((p["type"] or '').strip().upper())
+        img_info = _CAT_IMAGE.get(cat) if cat else None
+        sprite_img = None
+        sprite_size = 0
+        if img_info and _PIL_OK:
+            img_key, sprite_size = img_info
+            sprite_img = _get_resized(img_key, sprite_size)
+
+        # Speed vector — starts from geometric nose position
+        nose_r = (sprite_size // 2 - 2) if sprite_img else NOSE_LEN
         ln = speed_line_px(p["gs_knots"])
         if ln > 0:
-            tx, ty = nose_tip(x, y, p["nose_deg"])
-            r = math.radians(p["track_deg"])
-            ex = tx + int(math.sin(r) * ln)
-            ey = ty - int(math.cos(r) * ln)
+            tx = x + int(sin_h * nose_r)
+            ty = y - int(cos_h * nose_r)
+            r2 = math.radians(p["track_deg"])
+            ex = tx + int(math.sin(r2) * ln)
+            ey = ty - int(math.cos(r2) * ln)
             ex, ey = clip_to_ring(tx, ty, ex, ey)
             if (ex, ey) != (tx, ty):
                 c.create_line(tx, ty, ex, ey, fill=C_TRACK, width=2)
 
-        # Aircraft triangle (heading, red)
-        heading = p["nose_deg"]
-        rad = math.radians(heading)
-        s, co = math.sin(rad), math.cos(rad)
-        tip_x, tip_y = int(x + s * NOSE_LEN), int(y - co * NOSE_LEN)
-        bx = int(x - s * TAIL_LEN)
-        by = int(y + co * TAIL_LEN)
-        wx, wy = int(co * TAIL_HALF), int(s * TAIL_HALF)
-        c.create_polygon(tip_x, tip_y,
-                         bx + wx, by + wy,
-                         bx - wx, by - wy,
-                         fill=C_AIRCRAFT, outline="")
+        if sprite_img is not None:
+            rotated = sprite_img.rotate(-heading, resample=Image.BICUBIC, expand=False)
+            tk_img = ImageTk.PhotoImage(rotated)
+            self._image_refs.append(tk_img)
+            c.create_image(x, y, image=tk_img, anchor='center')
+        else:
+            _log_unknown_type(p["type"], p["callsign"])
+            tip_x = int(x + sin_h * NOSE_LEN)
+            tip_y = int(y - cos_h * NOSE_LEN)
+            bx = int(x - sin_h * TAIL_LEN)
+            by = int(y + cos_h * TAIL_LEN)
+            wx, wy = int(cos_h * TAIL_HALF), int(sin_h * TAIL_HALF)
+            c.create_polygon(tip_x, tip_y,
+                             bx + wx, by + wy,
+                             bx - wx, by - wy,
+                             fill=C_AIRCRAFT, outline="")
 
-        # Tag (callsign / type / altitude / speed)
         self._draw_tag(x, y, p["callsign"], p["type"], p["alt"], p["gs_knots"])
 
     def _draw_tag(self, x, y, callsign, ac_type, alt, gs_knots):
