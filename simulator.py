@@ -328,7 +328,9 @@ def fetch_aircraft(center_lat, center_lon, outer_km_val):
     for p in data.get("ac", []):
         if p.get("lat") is None or p.get("lon") is None:
             continue
-        on_ground = p.get("alt_baro") == "ground"
+        on_ground = False
+        if p.get("alt_baro") == "ground":
+            continue
 
         nose  = _f(p.get("true_heading") or p.get("mag_heading") or
                    p.get("track") or p.get("dir"))
