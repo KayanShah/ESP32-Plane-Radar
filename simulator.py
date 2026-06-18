@@ -169,11 +169,13 @@ _TYPE_CAT = {
     'B731':'narrow', 'B732':'narrow', 'B733':'narrow', 'B734':'narrow',
     'B735':'narrow', 'B736':'narrow', 'B737':'narrow', 'B738':'narrow', 'B739':'narrow',
     'B37M':'narrow', 'B38M':'narrow', 'B39M':'narrow',
+    'E295':'narrow', 'BCS3':'narrow',
     # ── Regional jet ───────────────────────────────────────────────────
     'E170':'regional', 'E175':'regional', 'E190':'regional', 'E195':'regional',
     'E75L':'regional', 'E7W' :'regional',
     'B712':'regional',
     'CRJ2':'regional', 'CRJ7':'regional', 'CRJ9':'regional', 'CRJX':'regional',
+    'E145':'regional',
     # ── Business / private jet ─────────────────────────────────────────
     'C525':'private_jet', 'C510':'private_jet', 'C56X':'private_jet',
     'C680':'private_jet', 'C68A':'private_jet', 'C700':'private_jet',
@@ -185,7 +187,7 @@ _TYPE_CAT = {
     'PC24':'private_jet', 'E55P':'private_jet', 'E50P':'private_jet', 'E35L':'private_jet',
     'BE40':'private_jet', 'BE4W':'private_jet', 'HA4T':'private_jet',
     'C25C':'private_jet', 'C550':'private_jet', 'PRM1':'private_jet', 'SF50':'private_jet',
-    'E545':'private_jet',
+    'E545':'private_jet', 'E550':'private_jet',
     # ── Turboprop ──────────────────────────────────────────────────────
     'AT43':'turboprop', 'AT45':'turboprop', 'AT72':'turboprop',
     'AT75':'turboprop', 'AT76':'turboprop',
@@ -204,6 +206,7 @@ _TYPE_CAT = {
     'P28A':'ga', 'P28B':'ga',
     'BE9L':'ga', 'BE36':'ga', 'GA7C':'ga',
     'TBM8':'ga', 'TBM9':'ga', 'PC12':'ga',
+    'RV6':'ga', 'TWEN':'ga', 'EV97':'ga', 'SKRA':'ga', 'ULAC':'ga', 'G2CA':'ga',
     # ── Helicopter ─────────────────────────────────────────────────────
     'EC35':'helicopter', 'EC45':'helicopter', 'H135':'helicopter', 'H145':'helicopter',
     'EC20':'helicopter', 'EC30':'helicopter',
@@ -215,6 +218,7 @@ _TYPE_CAT = {
     'AS32':'helicopter', 'AS50':'helicopter', 'AS55':'helicopter', 'AS65':'helicopter',
     'BK17':'helicopter', 'NH90':'helicopter',
     'H500':'helicopter', 'B505':'helicopter', 'H60':'helicopter', 'K100':'helicopter',
+    'A109':'helicopter', 'A139':'helicopter',
     # ── Military ───────────────────────────────────────────────────────
     'F15' :'military', 'F16' :'military', 'F18' :'military',
     'F22' :'military', 'F35' :'military', 'F117':'military',
