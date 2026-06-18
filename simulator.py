@@ -516,7 +516,7 @@ class RadarSim:
             if ident not in {
                 "EGLL", "EGCC",           # Heathrow, Manchester
                 "EGGW", "EGNX",           # Luton, East Midlands
-                "EGTR",                   # Elstree Aerodrome
+                "EGTR", "EGWU",           # Elstree Aerodrome, RAF Northolt
                 "EGTK", "EGUB", "EGVN",   # Oxford, RAF Benson, RAF Brize Norton
                 "VABB", "VOMM",           # Mumbai, Chennai
                 "VOGO", "VOPN",           # Goa Dabolim, Goa Mopa
