@@ -326,8 +326,7 @@ def fetch_aircraft(center_lat, center_lon, outer_km_val):
     for p in data.get("ac", []):
         if p.get("lat") is None or p.get("lon") is None:
             continue
-        if p.get("alt_baro") == "ground":
-            continue
+        on_ground = p.get("alt_baro") == "ground"
 
         nose  = _f(p.get("true_heading") or p.get("mag_heading") or
                    p.get("track") or p.get("dir"))
@@ -338,18 +337,22 @@ def fetch_aircraft(center_lat, center_lon, outer_km_val):
         callsign = (p.get("flight") or p.get("hex") or "").strip()[:8]
         ac_type  = (p.get("t") or "").strip()[:4]
 
-        alt = ""
-        ab = p.get("alt_baro")
-        ag = p.get("alt_geom")
-        if isinstance(ab, (int, float)):
-            alt = f"{int(round(ab))} ft"
-        elif isinstance(ag, (int, float)):
-            alt = f"{int(round(ag))} ft"
+        if on_ground:
+            alt = "GND"
+        else:
+            alt = ""
+            ab = p.get("alt_baro")
+            ag = p.get("alt_geom")
+            if isinstance(ab, (int, float)):
+                alt = f"{int(round(ab))} ft"
+            elif isinstance(ag, (int, float)):
+                alt = f"{int(round(ag))} ft"
 
         planes.append(dict(
             lat=float(p["lat"]), lon=float(p["lon"]),
             nose_deg=nose, track_deg=track, gs_knots=gs,
             callsign=callsign, type=ac_type, alt=alt,
+            on_ground=on_ground,
         ))
     return planes
 
@@ -470,6 +473,8 @@ class RadarSim:
             if ap_idx >= len(AIRPORTS):
                 continue
             ident, ap_lat, ap_lon = AIRPORTS[ap_idx]
+            if ident != "EGLL":
+                continue
             if dist_km(ap_lat, ap_lon, self.lat, self.lon) > fetch_r:
                 continue
 
@@ -532,28 +537,31 @@ class RadarSim:
         heading = p["nose_deg"]
         rad = math.radians(heading)
         sin_h, cos_h = math.sin(rad), math.cos(rad)
+        on_ground = p.get("on_ground", False)
+        plane_color = "#666666" if on_ground else C_AIRCRAFT
 
         # Resolve PNG sprite for this aircraft type
         cat = _TYPE_CAT.get((p["type"] or '').strip().upper())
         img_info = _CAT_IMAGE.get(cat) if cat else None
         sprite_img = None
         sprite_size = 0
-        if img_info and _PIL_OK:
+        if img_info and _PIL_OK and not on_ground:
             img_key, sprite_size = img_info
             sprite_img = _get_resized(img_key, sprite_size)
 
-        # Speed vector — starts from geometric nose position
+        # Speed vector — only for airborne aircraft
         nose_r = (sprite_size // 2 - 2) if sprite_img else NOSE_LEN
-        ln = speed_line_px(p["gs_knots"])
-        if ln > 0:
-            tx = x + int(sin_h * nose_r)
-            ty = y - int(cos_h * nose_r)
-            r2 = math.radians(p["track_deg"])
-            ex = tx + int(math.sin(r2) * ln)
-            ey = ty - int(math.cos(r2) * ln)
-            ex, ey = clip_to_ring(tx, ty, ex, ey)
-            if (ex, ey) != (tx, ty):
-                c.create_line(tx, ty, ex, ey, fill=C_TRACK, width=2)
+        if not on_ground:
+            ln = speed_line_px(p["gs_knots"])
+            if ln > 0:
+                tx = x + int(sin_h * nose_r)
+                ty = y - int(cos_h * nose_r)
+                r2 = math.radians(p["track_deg"])
+                ex = tx + int(math.sin(r2) * ln)
+                ey = ty - int(math.cos(r2) * ln)
+                ex, ey = clip_to_ring(tx, ty, ex, ey)
+                if (ex, ey) != (tx, ty):
+                    c.create_line(tx, ty, ex, ey, fill=C_TRACK, width=2)
 
         if sprite_img is not None:
             rotated = sprite_img.rotate(-heading, resample=Image.BICUBIC, expand=False)
@@ -561,7 +569,8 @@ class RadarSim:
             self._image_refs.append(tk_img)
             c.create_image(x, y, image=tk_img, anchor='center')
         else:
-            _log_unknown_type(p["type"], p["callsign"])
+            if not on_ground:
+                _log_unknown_type(p["type"], p["callsign"])
             tip_x = int(x + sin_h * NOSE_LEN)
             tip_y = int(y - cos_h * NOSE_LEN)
             bx = int(x - sin_h * TAIL_LEN)
@@ -570,16 +579,20 @@ class RadarSim:
             c.create_polygon(tip_x, tip_y,
                              bx + wx, by + wy,
                              bx - wx, by - wy,
-                             fill=C_AIRCRAFT, outline="")
+                             fill=plane_color, outline="")
 
-        self._draw_tag(x, y, p["callsign"], p["type"], p["alt"], p["gs_knots"])
+        self._draw_tag(x, y, p["callsign"], p["type"], p["alt"], p["gs_knots"],
+                       on_ground=on_ground)
 
-    def _draw_tag(self, x, y, callsign, ac_type, alt, gs_knots):
+    def _draw_tag(self, x, y, callsign, ac_type, alt, gs_knots, on_ground=False):
         c = self.canvas
         tf = ("Arial", 9, "bold")
         line_h = 11
         spd = f"{int(round(gs_knots))} kt" if gs_knots > 0 else ""
-        lines  = [(callsign, C_LABEL), (ac_type, C_TAG_TYPE), (alt, C_TAG_ALT), (spd, C_LABEL)]
+        if on_ground:
+            lines = [(callsign, "#999999"), (ac_type, "#777777"), (alt, "#777777")]
+        else:
+            lines = [(callsign, C_LABEL), (ac_type, C_TAG_TYPE), (alt, C_TAG_ALT), (spd, C_LABEL)]
         lines  = [(t, col) for t, col in lines if t]
 
         block_h = line_h * len(lines)
