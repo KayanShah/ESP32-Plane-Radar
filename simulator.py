@@ -190,6 +190,7 @@ _TYPE_CAT = {
     'BE40':'private_jet', 'BE4W':'private_jet', 'HA4T':'private_jet',
     'C25C':'private_jet', 'C550':'private_jet', 'PRM1':'private_jet', 'SF50':'private_jet',
     'E545':'private_jet', 'E550':'private_jet', 'GL7T':'private_jet', 'EA50':'private_jet',
+    'FA6X':'private_jet', 'C25A':'private_jet',
     # ── Turboprop ──────────────────────────────────────────────────────
     'AT43':'turboprop', 'AT45':'turboprop', 'AT72':'turboprop',
     'AT75':'turboprop', 'AT76':'turboprop',
@@ -205,7 +206,7 @@ _TYPE_CAT = {
     'BE58':'ga', 'DHC2':'ga',
     'SR20':'ga', 'SR22':'ga', 'S22T':'ga', 'ECHO':'ga',
     'DA40':'ga', 'DA42':'ga',
-    'P28A':'ga', 'P28B':'ga',
+    'P28A':'ga', 'P28B':'ga', 'P28R':'ga',
     'BE9L':'ga', 'BE36':'ga', 'GA7C':'ga',
     'TBM8':'ga', 'TBM9':'ga', 'PC12':'ga',
     'RV6':'ga', 'TWEN':'ga', 'EV97':'ga', 'SKRA':'ga', 'ULAC':'ga', 'G2CA':'ga',
