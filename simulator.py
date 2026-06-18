@@ -58,7 +58,9 @@ C_TAG_TYPE = "#ffc800"
 C_TAG_ALT  = "#5ac8ff"
 
 # Mirror of radar_range.h presets (ring3_km → outer_km = ring3 × 4/3)
-PRESETS_KM = [1.0, 5.0, 10.0, 25.0]
+PRESETS_KM = [0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
+              11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0,
+              21.0, 22.0, 23.0, 24.0, 25.0]
 OUTER_KM   = [r * 4.0 / 3.0 for r in PRESETS_KM]
 
 ADSB_API = "https://api.airplanes.live/v2/point/{lat:.6f}/{lon:.6f}/{nm_int}"
@@ -474,7 +476,7 @@ class RadarSim:
 
         # Scale label (east side of the outermost ring)
         ring3 = self._ring3_km()
-        scale_txt = f"{int(ring3)} km"
+        scale_txt = f"{int(ring3 * 1000)} m" if ring3 < 1.0 else f"{int(ring3)} km"
         scale_x = CX + GRID_R - SCALE_GAP
         c.create_text(scale_x, CY, text=scale_txt,
                       fill=C_GRID, font=("Arial", 10, "bold"), anchor="e")
@@ -687,7 +689,7 @@ class RadarSim:
             n = len(planes)
             self.status_var.set(
                 f"{n} aircraft  |  lat={self.lat:.4f}  lon={self.lon:.4f}"
-                f"  range={int(self._ring3_km())} km"
+                f"  range={int(self._ring3_km()*1000)} m" if self._ring3_km() < 1.0 else f"  range={int(self._ring3_km())} km"
             )
         except Exception as e:
             self.status_var.set(f"Fetch error: {e}")

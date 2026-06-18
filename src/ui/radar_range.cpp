@@ -15,7 +15,7 @@ constexpr char kPrefsNamespace[] = "planeradar";
 constexpr char kPrefsRangeKey[] = "rangeIdx";
 constexpr char kPrefsMilesKey[] = "useMiles";
 constexpr char kPrefsRunwaysKey[] = "showRwys";
-constexpr uint8_t kDefaultRangeIndex = 1;  // 10 km ring
+constexpr uint8_t kDefaultRangeIndex = 10;  // 10 km ring
 constexpr float kKmPerMile = 1.609344f;
 
 Preferences s_prefs;
@@ -109,6 +109,9 @@ void formatRing3Label(char* buf, size_t len, float ring3_km, bool use_miles) {
   if (use_miles) {
     const int mi = static_cast<int>(lroundf(ring3_km / kKmPerMile));
     snprintf(buf, len, "%dmi", mi);
+  } else if (ring3_km < 1.0f) {
+    const int m = static_cast<int>(lroundf(ring3_km * 1000.0f));
+    snprintf(buf, len, "%dm", m);
   } else {
     const int km = static_cast<int>(lroundf(ring3_km));
     snprintf(buf, len, "%dkm", km);
