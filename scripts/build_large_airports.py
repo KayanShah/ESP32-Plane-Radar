@@ -69,6 +69,10 @@ EXTRA_IDENTS: set[str] = {
     "EGKB",  # Biggin Hill
     "EGLC",  # London City
     "EGMC",  # Southend
+    "EGUB",  # RAF Benson
+    "EGVN",  # RAF Brize Norton
+    "EGTK",  # Oxford Kidlington
+    "VOPN",  # Manohar International (Goa Mopa)
 }
 
 

@@ -513,7 +513,14 @@ class RadarSim:
             if ap_idx >= len(AIRPORTS):
                 continue
             ident, ap_lat, ap_lon = AIRPORTS[ap_idx]
-            if ident not in ("EGLL", "EGCC"):
+            if ident not in {
+                "EGLL", "EGCC",           # Heathrow, Manchester
+                "EGGW", "EGNX",           # Luton, East Midlands
+                "EGTK", "EGUB", "EGVN",   # Oxford, RAF Benson, RAF Brize Norton
+                "VABB", "VOMM",           # Mumbai, Chennai
+                "VOGO", "VOPN",           # Goa Dabolim, Goa Mopa
+                "ZGSZ", "VHHH", "ZSSS",  # Shenzhen, Hong Kong, Shanghai Hongqiao
+            }:
                 continue
             if dist_km(ap_lat, ap_lon, self.lat, self.lon) > fetch_r:
                 continue
