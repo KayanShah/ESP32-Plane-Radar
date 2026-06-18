@@ -189,7 +189,7 @@ _TYPE_CAT = {
     'PC24':'private_jet', 'E55P':'private_jet', 'E50P':'private_jet', 'E35L':'private_jet',
     'BE40':'private_jet', 'BE4W':'private_jet', 'HA4T':'private_jet',
     'C25C':'private_jet', 'C550':'private_jet', 'PRM1':'private_jet', 'SF50':'private_jet',
-    'E545':'private_jet', 'E550':'private_jet',
+    'E545':'private_jet', 'E550':'private_jet', 'GL7T':'private_jet', 'EA50':'private_jet',
     # ── Turboprop ──────────────────────────────────────────────────────
     'AT43':'turboprop', 'AT45':'turboprop', 'AT72':'turboprop',
     'AT75':'turboprop', 'AT76':'turboprop',
@@ -209,6 +209,7 @@ _TYPE_CAT = {
     'BE9L':'ga', 'BE36':'ga', 'GA7C':'ga',
     'TBM8':'ga', 'TBM9':'ga', 'PC12':'ga',
     'RV6':'ga', 'TWEN':'ga', 'EV97':'ga', 'SKRA':'ga', 'ULAC':'ga', 'G2CA':'ga',
+    'MCR1':'ga', 'BT36':'ga', 'T6':'ga', 'BE76':'ga',
     # ── Helicopter ─────────────────────────────────────────────────────
     'EC35':'helicopter', 'EC45':'helicopter', 'H135':'helicopter', 'H145':'helicopter',
     'EC20':'helicopter', 'EC30':'helicopter',
@@ -228,6 +229,7 @@ _TYPE_CAT = {
     'A10' :'military', 'SU27':'military', 'SU30':'military',
     'MIG2':'military', 'MIG3':'military',
     'B1'  :'military', 'B2'  :'military', 'B52' :'military',
+    'C17' :'military',
 }
 
 
