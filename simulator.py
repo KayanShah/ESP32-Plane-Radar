@@ -58,7 +58,7 @@ C_TAG_TYPE = "#ffc800"
 C_TAG_ALT  = "#5ac8ff"
 
 # Mirror of radar_range.h presets (ring3_km → outer_km = ring3 × 4/3)
-PRESETS_KM = [5.0, 10.0, 15.0, 25.0]
+PRESETS_KM = [1.0, 5.0, 10.0, 25.0]
 OUTER_KM   = [r * 4.0 / 3.0 for r in PRESETS_KM]
 
 ADSB_API = "https://api.airplanes.live/v2/point/{lat:.6f}/{lon:.6f}/{nm_int}"
@@ -511,7 +511,7 @@ class RadarSim:
             if ap_idx >= len(AIRPORTS):
                 continue
             ident, ap_lat, ap_lon = AIRPORTS[ap_idx]
-            if ident != "EGLL":
+            if ident not in ("EGLL", "EGCC"):
                 continue
             if dist_km(ap_lat, ap_lon, self.lat, self.lon) > fetch_r:
                 continue
