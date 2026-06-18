@@ -520,6 +520,11 @@ class RadarSim:
                 "VABB", "VOMM",           # Mumbai, Chennai
                 "VOGO", "VOPN",           # Goa Dabolim, Goa Mopa
                 "ZGSZ", "VHHH", "ZSSS",  # Shenzhen, Hong Kong, Shanghai Hongqiao
+                "KORD", "KDEN", "KLAX",  # Chicago O'Hare, Denver, Los Angeles
+                "LTFM", "VIDP",           # Istanbul, Delhi
+                "ZSPD", "ZGGG",           # Shanghai Pudong, Guangzhou
+                "RKSI", "LFPG",           # Seoul Incheon, Paris CDG
+                "WSSS", "EHAM",           # Singapore Changi, Amsterdam Schiphol
             }:
                 continue
             if dist_km(ap_lat, ap_lon, self.lat, self.lon) > fetch_r:
