@@ -66,6 +66,8 @@ ADSB_API = "https://api.airplanes.live/v2/point/{lat:.6f}/{lon:.6f}/{nm_int}"
 C_RUNWAY       = "#389632"
 C_RUNWAY_LABEL = "#6ed2e6"
 
+MAP_OUTER_KM = 5.0   # tight airport view: fills the whole window with ~5 km radius
+
 # ---------------------------------------------------------------------------
 # Aircraft silhouettes — PNG sprites, nose-up, transparent background.
 # Loaded from simulator_assets/; PIL (Pillow) required.
@@ -262,8 +264,8 @@ def dist_sq_from_center(x, y):
     return (x - CX) ** 2 + (y - CY) ** 2
 
 
-def lat_lon_to_screen(lat, lon, center_lat, center_lon, outer_km):
-    px_per_km = GRID_R / outer_km
+def lat_lon_to_screen(lat, lon, center_lat, center_lon, outer_km, radius_px=GRID_R):
+    px_per_km = radius_px / outer_km
     cos_lat = math.cos(math.radians((lat + center_lat) * 0.5))
     dx_km = (lon - center_lon) * 111.0 * cos_lat
     dy_km = (lat - center_lat) * 111.0
@@ -383,7 +385,12 @@ class RadarSim:
                  font=("monospace", 10)).pack(pady=2)
 
         self.canvas.bind("<Button-1>", self._on_click)
+        root.bind("<m>", self._toggle_map)
+        root.bind("<M>", self._toggle_map)
         self._image_refs: list = []  # keep PhotoImage refs alive
+        self.map_mode = False
+        self._cur_outer_km  = self._outer_km()
+        self._cur_radius_px = GRID_R
 
         self._draw()
         self._schedule_fetch()
@@ -391,9 +398,15 @@ class RadarSim:
     # --- event handlers ---
 
     def _on_click(self, _event):
+        if self.map_mode:
+            return
         self.range_idx = (self.range_idx + 1) % len(PRESETS_KM)
         self._draw()
         self._schedule_fetch()
+
+    def _toggle_map(self, _event=None):
+        self.map_mode = not self.map_mode
+        self._draw()
 
     # --- range helpers ---
 
@@ -410,8 +423,30 @@ class RadarSim:
         c = self.canvas
         c.delete("all")
 
-        # Background: full black, then navy circle (the display face)
-        disp_r = CX  # half of SIZE
+        if self.map_mode:
+            self._cur_outer_km  = MAP_OUTER_KM
+            self._cur_radius_px = CX
+        else:
+            self._cur_outer_km  = self._outer_km()
+            self._cur_radius_px = GRID_R
+
+        if self.map_mode:
+            # Full-screen flat map: black background, no rings or compass
+            c.create_rectangle(0, 0, SIZE, SIZE, fill=C_BG, outline="")
+            self._draw_runways()
+            for p in self.aircraft:
+                x, y = lat_lon_to_screen(p["lat"], p["lon"], self.lat, self.lon,
+                                         self._cur_outer_km, self._cur_radius_px)
+                if -60 <= x <= SIZE + 60 and -60 <= y <= SIZE + 60:
+                    self._draw_plane(p)
+            r = CENTER_DOT_R
+            c.create_oval(CX - r, CY - r, CX + r, CY + r, fill=C_CENTER, outline="")
+            c.create_text(SIZE - 4, SIZE - 4, text="M=radar", fill="#333355",
+                          font=("Arial", 8), anchor="se")
+            return
+
+        # --- radar mode ---
+        disp_r = CX
         c.create_oval(CX - disp_r, CY - disp_r, CX + disp_r, CY + disp_r,
                       fill=C_BG, outline="")
 
@@ -458,15 +493,16 @@ class RadarSim:
 
         # Hint
         c.create_text(SIZE - 4, SIZE - 4,
-                      text="click = range", fill="#333355",
+                      text="M=map  click=range", fill="#333355",
                       font=("Arial", 8), anchor="se")
 
     def _draw_runways(self):
         if not AIRPORTS:
             return
         c = self.canvas
-        outer_km = self._outer_km()
-        fetch_r = outer_km * 1.3  # match firmware: fetchRadiusKm() > outer_km
+        outer_km   = self._cur_outer_km
+        radius_px  = self._cur_radius_px
+        fetch_r    = outer_km * 1.3
 
         labeled = set()
         for ap_idx, le_lat, le_lon, he_lat, he_lon in RUNWAYS:
@@ -478,25 +514,26 @@ class RadarSim:
             if dist_km(ap_lat, ap_lon, self.lat, self.lon) > fetch_r:
                 continue
 
-            x0, y0 = lat_lon_to_screen(le_lat, le_lon, self.lat, self.lon, outer_km)
-            x1, y1 = lat_lon_to_screen(he_lat, he_lon, self.lat, self.lon, outer_km)
+            x0, y0 = lat_lon_to_screen(le_lat, le_lon, self.lat, self.lon, outer_km, radius_px)
+            x1, y1 = lat_lon_to_screen(he_lat, he_lon, self.lat, self.lon, outer_km, radius_px)
 
-            # Skip if both endpoints are outside the ring
-            if (dist_sq_from_center(x0, y0) > GRID_R ** 2 and
-                    dist_sq_from_center(x1, y1) > GRID_R ** 2):
-                # Quick check: might still cross the ring
-                if not self._segment_crosses_ring(x0, y0, x1, y1):
-                    continue
-
-            # Clip endpoints to ring
-            x1c, y1c = clip_to_ring(x0, y0, x1, y1)
-            x0c, y0c = clip_to_ring(x1, y1, x0, y0)
-            c.create_line(x0c, y0c, x1c, y1c, fill=C_RUNWAY, width=3)
+            if self.map_mode:
+                c.create_line(x0, y0, x1, y1, fill=C_RUNWAY, width=4)
+            else:
+                # Skip if both endpoints are outside the ring
+                if (dist_sq_from_center(x0, y0) > GRID_R ** 2 and
+                        dist_sq_from_center(x1, y1) > GRID_R ** 2):
+                    if not self._segment_crosses_ring(x0, y0, x1, y1):
+                        continue
+                x1c, y1c = clip_to_ring(x0, y0, x1, y1)
+                x0c, y0c = clip_to_ring(x1, y1, x0, y0)
+                c.create_line(x0c, y0c, x1c, y1c, fill=C_RUNWAY, width=3)
 
             if ap_idx not in labeled:
                 labeled.add(ap_idx)
-                ax, ay = lat_lon_to_screen(ap_lat, ap_lon, self.lat, self.lon, outer_km)
-                ax, ay = self._clamp_to_ring(ax, ay)
+                ax, ay = lat_lon_to_screen(ap_lat, ap_lon, self.lat, self.lon, outer_km, radius_px)
+                if not self.map_mode:
+                    ax, ay = self._clamp_to_ring(ax, ay)
                 dx, dy = ax - CX, ay - CY
                 ln = math.sqrt(dx*dx + dy*dy) or 1
                 gap = 6 * SCALE
@@ -532,8 +569,8 @@ class RadarSim:
 
     def _draw_plane(self, p):
         c = self.canvas
-        outer_km = self._outer_km()
-        x, y = lat_lon_to_screen(p["lat"], p["lon"], self.lat, self.lon, outer_km)
+        x, y = lat_lon_to_screen(p["lat"], p["lon"], self.lat, self.lon,
+                                  self._cur_outer_km, self._cur_radius_px)
         heading = p["nose_deg"]
         rad = math.radians(heading)
         sin_h, cos_h = math.sin(rad), math.cos(rad)
