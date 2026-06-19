@@ -173,7 +173,7 @@ _TYPE_CAT = {
     'B731':'narrow', 'B732':'narrow', 'B733':'narrow', 'B734':'narrow',
     'B735':'narrow', 'B736':'narrow', 'B737':'narrow', 'B738':'narrow', 'B739':'narrow',
     'B37M':'narrow', 'B38M':'narrow', 'B39M':'narrow',
-    'E295':'narrow', 'BCS3':'narrow',
+    'E295':'narrow', 'BCS3':'narrow', 'E290':'narrow',
     # ── Regional jet ───────────────────────────────────────────────────
     'E170':'regional', 'E175':'regional', 'E190':'regional', 'E195':'regional',
     'E75L':'regional', 'E7W' :'regional',
@@ -206,7 +206,7 @@ _TYPE_CAT = {
     'P32R':'ga',
     'M20P':'ga', 'C72R':'ga', 'C340':'ga', 'C414':'ga',
     'BE58':'ga', 'DHC2':'ga',
-    'SR20':'ga', 'SR22':'ga', 'S22T':'ga', 'ECHO':'ga',
+    'SR20':'ga', 'SR22':'ga', 'S22T':'ga', 'ECHO':'ga', 'E200':'ga',
     'DA40':'ga', 'DA42':'ga',
     'P28A':'ga', 'P28B':'ga', 'P28R':'ga',
     'BE9L':'ga', 'BE36':'ga', 'GA7C':'ga',
