@@ -687,13 +687,19 @@ class RadarSim:
             planes = fetch_aircraft(self.lat, self.lon, self._outer_km())
             self.aircraft = planes
             n = len(planes)
+            r = self._ring3_km()
+            range_str = f"{int(r * 1000)} m" if r < 1.0 else f"{int(r)} km"
             self.status_var.set(
                 f"{n} aircraft  |  lat={self.lat:.4f}  lon={self.lon:.4f}"
-                f"  range={int(self._ring3_km()*1000)} m" if self._ring3_km() < 1.0 else f"  range={int(self._ring3_km())} km"
+                f"  range={range_str}"
             )
         except Exception as e:
             self.status_var.set(f"Fetch error: {e}")
-        self._draw()
+        try:
+            self._draw()
+        except Exception as e:
+            print(f"Draw error: {e}")
+            import traceback; traceback.print_exc()
         self.root.after(3000, self._do_fetch)
 
 
