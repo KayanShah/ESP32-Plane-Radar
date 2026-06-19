@@ -173,7 +173,7 @@ _TYPE_CAT = {
     'B731':'narrow', 'B732':'narrow', 'B733':'narrow', 'B734':'narrow',
     'B735':'narrow', 'B736':'narrow', 'B737':'narrow', 'B738':'narrow', 'B739':'narrow',
     'B37M':'narrow', 'B38M':'narrow', 'B39M':'narrow',
-    'E295':'narrow', 'BCS3':'narrow', 'E290':'narrow',
+    'E295':'narrow', 'BCS3':'narrow', 'BCS1':'narrow', 'E290':'narrow',
     # ── Regional jet ───────────────────────────────────────────────────
     'E170':'regional', 'E175':'regional', 'E190':'regional', 'E195':'regional',
     'E75L':'regional', 'E7W' :'regional',
