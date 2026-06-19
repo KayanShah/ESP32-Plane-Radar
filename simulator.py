@@ -377,6 +377,7 @@ class RadarSim:
         self.lon        = center_lon
         self.range_idx  = range_idx % len(PRESETS_KM)
         self.aircraft   = []
+        self._fetch_after_id = None
 
         root.title("Plane Radar Simulator")
         root.configure(bg="black")
@@ -680,7 +681,9 @@ class RadarSim:
     # --- data refresh ---
 
     def _schedule_fetch(self):
-        self.root.after(0, self._do_fetch)
+        if self._fetch_after_id is not None:
+            self.root.after_cancel(self._fetch_after_id)
+        self._fetch_after_id = self.root.after(0, self._do_fetch)
 
     def _do_fetch(self):
         try:
@@ -700,7 +703,7 @@ class RadarSim:
         except Exception as e:
             print(f"Draw error: {e}")
             import traceback; traceback.print_exc()
-        self.root.after(3000, self._do_fetch)
+        self._fetch_after_id = self.root.after(3000, self._do_fetch)
 
 
 # ---------------------------------------------------------------------------
