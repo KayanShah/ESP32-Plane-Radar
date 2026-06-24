@@ -258,7 +258,7 @@ void stopLanWebPortal() {
 
 void prepareSta() {
   WiFi.mode(WIFI_STA);
-  WiFi.setSleep(WIFI_PS_NONE);
+  WiFi.setSleep(WIFI_PS_MIN_MODEM);
   WiFi.setAutoReconnect(true);
 }
 
