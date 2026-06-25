@@ -75,7 +75,10 @@ void setup() {
   }
   services::location::init();
   ui::radar::rangeInit();
-  services::adsb::setPollFn(wifiLoop);
+  services::adsb::setPollFn([]() {
+    wifiLoop();
+    handleBootButton();
+  });
 
   if (wifiSetupConnect()) {
     showRadarIfConnected();

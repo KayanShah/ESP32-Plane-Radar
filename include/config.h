@@ -27,7 +27,7 @@ constexpr unsigned long kWifiReconnectIntervalMs = 15000;
 constexpr gpio_num_t kBootPin = GPIO_NUM_9;
 constexpr unsigned long kBootResetHoldMs = 3000UL;
 /** Ignore BOOT taps shorter than this (debounce). */
-constexpr unsigned long kBootTapMinMs = 40UL;
+constexpr unsigned long kBootTapMinMs = 15UL;
 
 // --- Display: GC9A01 1.28" round 240×240 (SPI) ---
 constexpr gpio_num_t kDisplayPinRst = GPIO_NUM_0;
