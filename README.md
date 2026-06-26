@@ -2,7 +2,7 @@
 
 <img width="800" height="450" alt="plane-radar" src="https://github.com/user-attachments/assets/716d0992-dab8-47ba-8f1a-2aec7f607419" />
 
-> **Forked from [MatixYo/ESP32-Plane-Radar](https://github.com/MatixYo/ESP32-Plane-Radar) by [Mateusz Juszczyk](https://github.com/MatixYo)** — all credit for the original project goes to him. This fork adds personal improvements documented below.
+> **Forked from [MatixYo/ESP32-Plane-Radar](https://github.com/MatixYo/ESP32-Plane-Radar) by [Mateusz Juszczyk](https://github.com/MatixYo)** — all credit for the original project goes to him. This fork adds personal improvements (in terms of both hardware and software) documented below.
 
 **3D printed case (STL + assembly):** [MakerWorld](https://makerworld.com/en/models/2872376-esp32-plane-radar-live-ads-b-on-a-round-display#profileId-3207083) · **Firmware:** [Releases](https://github.com/KayanShah/ESP32-Plane-Radar/releases)
 
