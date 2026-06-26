@@ -2,16 +2,32 @@
 
 <img width="800" height="450" alt="plane-radar" src="https://github.com/user-attachments/assets/716d0992-dab8-47ba-8f1a-2aec7f607419" />
 
-**3D printed case (STL + assembly):** [MakerWorld](https://makerworld.com/en/models/2872376-esp32-plane-radar-live-ads-b-on-a-round-display#profileId-3207083) · **Firmware:** [Releases](https://github.com/MatixYo/ESP32-Plane-Radar/releases)
+> **Forked from [MatixYo/ESP32-Plane-Radar](https://github.com/MatixYo/ESP32-Plane-Radar) by [Mateusz Juszczyk](https://github.com/MatixYo)** — all credit for the original project goes to him. This fork adds personal improvements documented below.
+
+**3D printed case (STL + assembly):** [MakerWorld](https://makerworld.com/en/models/2872376-esp32-plane-radar-live-ads-b-on-a-round-display#profileId-3207083) · **Firmware:** [Releases](https://github.com/KayanShah/ESP32-Plane-Radar/releases)
 
 Firmware for an **ESP32-C3 Super Mini** and a **1.28″ round GC9A01** display (240×240). Shows a circular **ADS-B radar** around your configured location, with **WiFiManager** for first-time setup.
+
+---
+
+## What's changed in this fork
+
+| Change | Details |
+|--------|---------|
+| **WiFi modem sleep** | `WIFI_PS_MIN_MODEM` instead of `WIFI_PS_NONE` — significantly reduces board temperature |
+| **Faster SPI** | Display SPI clock raised from 10 MHz → 20 MHz for snappier frame push |
+| **Smoother radar rings** | Anti-aliased rings via `fillSmoothCircle` (LovyanGFX), drawn outermost-first |
+| **BOOT button responsiveness** | Debounce lowered 40 ms → 15 ms; button also polled during HTTP fetch so taps are never dropped |
+| **Aircraft classification** | Extended `aircraft_types.h` with additional narrow-body, wide-body, regional and GA types |
+
+---
 
 ## What it does
 
 1. **Wi‑Fi setup** (if needed) — captive portal on AP **`PlaneRadar-Setup`**
 2. **Radar** — live aircraft from [adsb.fi](https://opendata.adsb.fi/) on a sonar-style grid
 
-After Wi‑Fi is saved, the device reconnects automatically; the radar runs in the main loop with periodic ADS-B updates (~5 s).
+After Wi‑Fi is saved, the device reconnects automatically; the radar runs in the main loop with periodic ADS-B updates (~3 s).
 
 ## Controls (BOOT, GPIO 9, active LOW)
 
@@ -35,7 +51,7 @@ During setup you can also hold BOOT at power-on to force a credential reset (sam
 1. Open **`http://plane-radar.local`** or **`http://<device-ip>`** (e.g. from your router or serial log at boot)
 2. Change Wi‑Fi, location, units, or runway overlay; save
 
-The same portal runs on the setup AP and on the device’s LAN IP while connected to Wi‑Fi. mDNS hostname is `plane-radar` → **plane-radar.local** (`kPortalHostname` in `config.h`). Some clients resolve `.local` slowly; use the IP if needed.
+The same portal runs on the setup AP and on the device's LAN IP while connected to Wi‑Fi. mDNS hostname is `plane-radar` → **plane-radar.local** (`kPortalHostname` in `config.h`). Some clients resolve `.local` slowly; use the IP if needed.
 
 **Custom fields** (stored in NVS):
 
@@ -45,7 +61,7 @@ The same portal runs on the setup AP and on the device’s LAN IP while connecte
 | **Display distances in miles** | Ring scale label in **mi** instead of **km** (e.g. `6mi` vs `10km`) |
 | **Show airport runways** | Major-airport runway overlay on the radar (off to hide) |
 
-After a reset, the device reboots and shows the setup screen immediately (no “Connecting” loop on stale credentials).
+After a reset, the device reboots and shows the setup screen immediately (no "Connecting" loop on stale credentials).
 
 ## Radar display
 
@@ -86,7 +102,7 @@ As range decreases (or aircraft approach), targets move inward; beyond-ring dots
 
 - Source: `https://opendata.adsb.fi/api/v3/`
 - Fetch radius: `ui::radar::fetchRadiusKm()` — scales with the active preset to roughly the screen edge (so rim dots have data)
-- Poll interval: `kAdsbFetchIntervalMs` (5 s) in `config.h`
+- Poll interval: `kAdsbFetchIntervalMs` (3 s) in `config.h`
 - Ground aircraft hidden by default (`kAdsbShowGroundAircraft`)
 
 ## Configuration
@@ -164,7 +180,7 @@ pio device monitor
 
 ### Web-flashable release image
 
-Single `.bin` for [esptool-js](https://espressif.github.io/esptool-js/) and similar tools (ESP32-C3, 4 MB, flash at **0x0**):
+Single `.bin` for [esptool-js](https://espressif.github.io/esptool-js/) and similar tools (ESP32-C3, 4 MB, flash at **0x0**):
 
 ```bash
 chmod +x scripts/merge-firmware.sh   # once
@@ -200,10 +216,16 @@ git tag v1.0.0
 git push origin v1.0.0
 ```
 
-The release workflow builds firmware in CI and attaches the merged image to the release. Download from **Releases** on GitHub, then flash at **0x0** (ESP32-C3, 4 MB).
+The release workflow builds firmware in CI and attaches the merged image to the release. Download from **Releases** on GitHub, then flash at **0x0** (ESP32-C3, 4 MB).
 
 ## Dependencies
 
 - [LovyanGFX](https://github.com/lovyan03/LovyanGFX)
 - [WiFiManager](https://github.com/tzapu/WiFiManager)
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
+
+## Credits
+
+Original project by **[Mateusz Juszczyk (MatixYo)](https://github.com/MatixYo)** — [MatixYo/ESP32-Plane-Radar](https://github.com/MatixYo/ESP32-Plane-Radar).
+
+Double-buffering contributed by [Rockwell Schrock](https://github.com/schrockwell).
