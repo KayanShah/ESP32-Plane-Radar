@@ -588,11 +588,7 @@ void drawGridRing(int cx, int cy, int r, uint16_t color) {
   if (r <= 0) {
     return;
   }
-  const int thickness =
-      std::max(1, static_cast<int>(radar::kGridStrokeHalfWidth * 2.0f));
-  for (int i = 0; i < thickness && r - i > 0; ++i) {
-    s_draw->drawCircle(cx, cy, r - i, color);
-  }
+  s_draw->drawSmoothCircle(cx, cy, r, color, radar::kColorBackground);
 }
 
 void drawRings(int cx, int cy, int outer_radius) {
