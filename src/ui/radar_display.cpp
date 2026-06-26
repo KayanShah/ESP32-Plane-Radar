@@ -588,11 +588,14 @@ void drawGridRing(int cx, int cy, int r, uint16_t color) {
   if (r <= 0) {
     return;
   }
-  s_draw->drawSmoothCircle(cx, cy, r, color, radar::kColorBackground);
+  s_draw->fillSmoothCircle(cx, cy, r, color);
+  if (r > 2) {
+    s_draw->fillSmoothCircle(cx, cy, r - 2, radar::kColorBackground);
+  }
 }
 
 void drawRings(int cx, int cy, int outer_radius) {
-  for (int i = 1; i <= radar::kRingCount; ++i) {
+  for (int i = radar::kRingCount; i >= 1; --i) {
     const int r = (outer_radius * i) / radar::kRingCount;
     drawGridRing(cx, cy, r, radar::kColorGrid);
   }
