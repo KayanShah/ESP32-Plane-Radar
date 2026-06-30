@@ -22,7 +22,7 @@ struct Runway {
 };
 
 constexpr size_t kAirportCount = 1175;
-constexpr size_t kRunwayCount = 1716;
+constexpr size_t kRunwayCount = 1719;
 
 extern const Airport kAirports[];
 extern const Runway kRunways[];
